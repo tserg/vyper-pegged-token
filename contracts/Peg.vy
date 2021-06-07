@@ -105,7 +105,7 @@ def approve(_spender : address, _value : uint256) -> bool:
 
 
 @external
-def mint(_base_token_quantity: uint256):
+def mintPeg(_base_token_quantity: uint256):
     """
     @dev Mint the Peg token by transferring the Base token to the contract.
          This encapsulates the modification of balances such that the
@@ -135,20 +135,13 @@ def _burn(_to: address, _value: uint256):
 
 
 @external
-def burn(_value: uint256):
+def redeemPeg(_value: uint256):
     """
-    @dev Burn an amount of the token of msg.sender.
-    @param _value The amount that will be burned.
+    @dev Redeem an amount of the Peg token of msg.sender.
+    @param _value The amount that will be redeemed.
     """
+    assert _value <= self.balanceOf[msg.sender]
     self._burn(msg.sender, _value)
 
-
-@external
-def burnFrom(_to: address, _value: uint256):
-    """
-    @dev Burn an amount of the token from a given account.
-    @param _to The account whose tokens will be burned.
-    @param _value The amount that will be burned.
-    """
-    self.allowance[_to][msg.sender] -= _value
-    self._burn(_to, _value)
+    _redeemedBaseTokens: uint256 = _value / 1000
+    self.baseToken.transfer(msg.sender, _redeemedBaseTokens)
