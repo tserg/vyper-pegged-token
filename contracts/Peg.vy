@@ -18,6 +18,14 @@ event Approval:
     spender: indexed(address)
     value: uint256
 
+event Mint:
+    minter: indexed(address)
+    valueMinted: uint256
+
+event Redeem:
+    redeemer: indexed(address)
+    valueRedeemed: uint256
+
 name: public(String[64])
 symbol: public(String[32])
 decimals: public(uint256)
@@ -118,6 +126,7 @@ def mintPeg(_base_token_quantity: uint256):
     self.totalSupply += _newPegTokens
     self.balanceOf[msg.sender] += _newPegTokens
     log Transfer(ZERO_ADDRESS, msg.sender, _newPegTokens)
+    log Mint(msg.sender, _newPegTokens)
 
 
 @internal
@@ -145,3 +154,4 @@ def redeemPeg(_value: uint256):
 
     _redeemedBaseTokens: uint256 = _value / 1000
     self.baseToken.transfer(msg.sender, _redeemedBaseTokens)
+    log Redeem(msg.sender, _value)
