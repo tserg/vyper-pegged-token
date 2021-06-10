@@ -82,3 +82,23 @@ def test_transfer_peg(PegContract, accounts):
 	assert tx1.events[0]['sender'] == accounts[0]
 	assert tx1.events[0]['receiver'] == accounts[1]
 	assert tx1.events[0]['value'] == Web3.toWei(40000, 'ether')
+
+def test_redeem_peg_after_transfer(ERC20Contract, PegContract, accounts):
+
+	tx1 = PegContract.redeemPeg(Web3.toWei(40000, 'ether'), {'from': accounts[1]})
+
+	assert PegContract.balanceOf(accounts[1]) == 0
+	assert PegContract.totalSupply() == Web3.toWei(50000, 'ether')
+	assert ERC20Contract.balanceOf(accounts[1]) == Web3.toWei(40, 'ether')
+	assert ERC20Contract.balanceOf(PegContract.address) == Web3.toWei(50, 'ether')
+
+	assert tx1.events[0]['sender'] == accounts[1]
+	assert tx1.events[0]['receiver'] == ZERO_ADDRESS
+	assert tx1.events[0]['value'] == Web3.toWei(40000, 'ether')
+
+	assert tx1.events[1]['sender'] == PegContract.address
+	assert tx1.events[1]['receiver'] == accounts[1]
+	assert tx1.events[1]['value'] == Web3.toWei(40, 'ether')
+
+	assert tx1.events[2]['redeemer'] == accounts[1]
+	assert tx1.events[2]['valueRedeemed'] == Web3.toWei(40000, 'ether')
