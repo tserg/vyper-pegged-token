@@ -6,6 +6,7 @@ from brownie import (
 	accounts,
 	ERC20,
 	Peg,
+	reverts,
 )
 
 ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -102,3 +103,26 @@ def test_redeem_peg_after_transfer(ERC20Contract, PegContract, accounts):
 
 	assert tx1.events[2]['redeemer'] == accounts[1]
 	assert tx1.events[2]['valueRedeemed'] == Web3.toWei(40000, 'ether')
+
+def test_over_redeem(PegContract, accounts):
+
+	with reverts():
+		tx1 = PegContract.redeemPeg(Web3.toWei(50001, 'ether'), {'from': accounts[0]})
+
+def test_redeem_zero(PegContract, accounts):
+
+	tx1 = PegContract.redeemPeg(0, {'from': accounts[0]})
+
+	assert PegContract.balanceOf(accounts[0]) == Web3.toWei(50000, 'ether')
+	assert PegContract.totalSupply() == Web3.toWei(50000, 'ether')
+
+	assert tx1.events[0]['sender'] == accounts[0]
+	assert tx1.events[0]['receiver'] == ZERO_ADDRESS
+	assert tx1.events[0]['value'] == 0
+
+	assert tx1.events[1]['sender'] == PegContract.address
+	assert tx1.events[1]['receiver'] == accounts[0]
+	assert tx1.events[1]['value'] == 0
+
+	assert tx1.events[2]['redeemer'] == accounts[0]
+	assert tx1.events[2]['valueRedeemed'] == 0
