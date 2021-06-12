@@ -126,3 +126,8 @@ def test_redeem_zero(PegContract, accounts):
 
 	assert tx1.events[2]['redeemer'] == accounts[0]
 	assert tx1.events[2]['valueRedeemed'] == 0
+
+def test_redeem_beyond_balance(PegContract, accounts):
+
+	with reverts():
+		tx1 = PegContract.redeemPeg(Web3.toWei(50001, 'ether'), {'from': accounts[0]})
