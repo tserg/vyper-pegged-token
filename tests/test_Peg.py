@@ -104,10 +104,15 @@ def test_redeem_peg_after_transfer(ERC20Contract, PegContract, accounts):
 	assert tx1.events[2]['redeemer'] == accounts[1]
 	assert tx1.events[2]['valueRedeemed'] == Web3.toWei(40000, 'ether')
 
-def test_over_redeem(PegContract, accounts):
+def test_over_redeem_beyond_contract_balance(PegContract, accounts):
 
 	with reverts():
 		tx1 = PegContract.redeemPeg(Web3.toWei(50001, 'ether'), {'from': accounts[0]})
+
+def test_over_redeem_within_contract_balance(PegContract, accounts):
+
+	with reverts():
+		tx1 = PegContract.redeemPeg(Web3.toWei(100, 'ether'), {'from': accounts[1]})
 
 def test_redeem_zero(PegContract, accounts):
 
@@ -126,8 +131,3 @@ def test_redeem_zero(PegContract, accounts):
 
 	assert tx1.events[2]['redeemer'] == accounts[0]
 	assert tx1.events[2]['valueRedeemed'] == 0
-
-def test_redeem_beyond_balance(PegContract, accounts):
-
-	with reverts():
-		tx1 = PegContract.redeemPeg(Web3.toWei(50001, 'ether'), {'from': accounts[0]})
